@@ -7,14 +7,26 @@ import java.util.Observer;
 
 //access to UserView.var
 public class FollowListViewModel extends JPanel implements TreeModel, Observer {
+    private static FollowListViewModel single_instance = null;
     private JTree userList;
     private UserGroup following;
 
-    public FollowListViewModel(){
+    private FollowListViewModel(){
         this.following = UserView.currentUser.getFollowing();
         this.userList = createTree();
         following.addObserver(this); //updates view when user follows somebody new
         render();
+    }
+
+    public static FollowListViewModel getInstance(){
+        if (single_instance == null) {
+            synchronized (FollowListViewModel.class) {
+                if (single_instance == null) {
+                    single_instance = new FollowListViewModel();
+                }
+            }
+        }
+        return single_instance;
     }
 
     public void render(){
