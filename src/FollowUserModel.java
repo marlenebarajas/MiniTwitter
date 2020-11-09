@@ -8,17 +8,29 @@ import javax.swing.border.EtchedBorder;
  * Model for inputting a UserId to follow a user.
  */
 public class FollowUserModel extends JPanel {
+    private static FollowUserModel single_instance = null;
     private JTextField idInput;
     private JButton followUser;
     private User currentUser;
     private UserGroup root;
 
-    public FollowUserModel(){
+    private FollowUserModel(){
         this.currentUser = UserView.currentUser;
         this.root = AdminControlPanel.root;
         this.followUser = buttonFollow();
         this.idInput = followField();
         render();
+    }
+
+    public static FollowUserModel getInstance(){
+        if (single_instance == null) {
+            synchronized (FollowUserModel.class) {
+                if (single_instance == null) {
+                    single_instance = new FollowUserModel();
+                }
+            }
+        }
+        return single_instance;
     }
 
     private void render() {
@@ -54,17 +66,15 @@ public class FollowUserModel extends JPanel {
                 inputVal = Integer.parseInt(input);
             } catch(NumberFormatException e){
                 userNotFound();
+                return;
             }
             User foundUser = root.findUser(inputVal); //find user they want to follow
 
             if(foundUser!=null){ //case: user exists and was found
                 currentUser.followUser(foundUser);
-                //update observers of this group?
             }else{ //case: user does not exist
                 userNotFound();
             }
-        } else{ //case: user input was not correct
-            userNotFound();
         }
     }
 
