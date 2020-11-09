@@ -3,7 +3,6 @@ import javax.swing.border.EtchedBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
 
 public class JoinGroupModel extends JPanel {
     private JTextField idInput;
@@ -79,7 +78,7 @@ public class JoinGroupModel extends JPanel {
     private boolean leaveGroup(){
         JFrame frame = new JFrame();
         int answer = JOptionPane.showConfirmDialog(frame, "You are already in a group. Would you like to leave your current group?", "Please Choose One" ,JOptionPane.YES_NO_CANCEL_OPTION);
-        if(answer==JOptionPane.YES_OPTION){ //use will leave group for new group
+        if(answer==JOptionPane.YES_OPTION){ //user will leave group for new group
             return true;
         } else{ //user doesn't want to leave group
             return false;
