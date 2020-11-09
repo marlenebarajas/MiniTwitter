@@ -5,15 +5,27 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class PostTweetModel extends JPanel {
+    private static PostTweetModel single_instance = null;
     private JTextField tweet;
     private JButton post;
     private User currentUser;
 
-    public PostTweetModel(){
+    private PostTweetModel(){
         this.tweet = fieldTweet();
         this.post = buttonPostTweet();
         this.currentUser = UserView.currentUser;
         render();
+    }
+
+    public static PostTweetModel getInstance(){
+        if (single_instance == null) {
+            synchronized (PostTweetModel.class) {
+                if (single_instance == null) {
+                    single_instance = new PostTweetModel();
+                }
+            }
+        }
+        return single_instance;
     }
 
     private void render(){
