@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class JoinGroupModel extends JPanel {
+    private static JoinGroupModel single_instance = null;
     private JTextField idInput;
     private JButton joinGroup;
     private User currentUser;
@@ -16,6 +17,17 @@ public class JoinGroupModel extends JPanel {
         this.joinGroup = buttonJoin();
         this.idInput = fieldJoin();
         render();
+    }
+
+    public static JoinGroupModel getInstance(){
+        if (single_instance == null) {
+            synchronized (JoinGroupModel.class) {
+                if (single_instance == null) {
+                    single_instance = new JoinGroupModel();
+                }
+            }
+        }
+        return single_instance;
     }
 
     private void render() {
@@ -51,6 +63,7 @@ public class JoinGroupModel extends JPanel {
                 groupid = Integer.parseInt(input);
             } catch(NumberFormatException e){
                 errorJoining(false);
+                return;
             }
             UserGroup newGroup = root.getInnerGroup(groupid);
             if(newGroup!=null){ //case: group exists and was found
@@ -109,5 +122,4 @@ public class JoinGroupModel extends JPanel {
         error.pack();
         error.setVisible(true);
     }
-
 }
