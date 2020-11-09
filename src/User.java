@@ -52,10 +52,6 @@ public class User extends Observable implements Observer, Entity {
 
     public void postTweet(Tweet tweet){
         feed.addToFeed(tweet);
-
-       //THIS WORKS ALONE:
-        //setChanged();
-        //notifyObservers(); //this updates user on their feed. (probably because updates their tweetfeed)
     }
 
     public Feed getDisplayFeed(){
