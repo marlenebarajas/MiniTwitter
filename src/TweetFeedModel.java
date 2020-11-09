@@ -1,56 +1,54 @@
 import javax.swing.*;
-import javax.swing.border.EtchedBorder;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Observer;
-import java.util.Observable;
 
-/**
- * TweetFeed is an observer of many user's tweets.
- */
+public class UserView {
+    static User currentUser;
 
-public class TweetFeedModel extends JPanel implements Observer {
-    private JTextArea feed;
-    private User currentUser;
+    public UserView(){
+        currentUser = null;
+        renderError();
+    }
 
-    public TweetFeedModel(){
-        this.currentUser = UserView.currentUser;
-        currentUser.addObserver(this); //so that when user's feed is updated, this is too
-        this.feed = textFeed();
+    public UserView(User user){
+        currentUser = user;
         render();
     }
 
-    private void render(){
-        setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Tweet Feed"));
-        setLayout(new GridLayout(1,1));
-        setMinimumSize(new Dimension(100, 300));
+    private static void render() {
+        //Create and set up the window.
+        JFrame frame = new JFrame("User View");
+        frame.setMinimumSize(new Dimension(800,400));
+        frame.setPreferredSize(new Dimension(800, 400));
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        frame.setLayout(new FlowLayout());
 
-        add(feed);
+        //Add content to the window.
+        frame.add(FollowListViewModel.getInstance());
+        frame.add(FollowUserModel.getInstance());
+        frame.add(JoinGroupModel.getInstance());
+        frame.add(PostTweetModel.getInstance());
+        frame.add(TweetFeedModel.getInstance());
+
+        //Display the window.
+        frame.pack();
+        frame.setVisible(true);
     }
 
+    private static void renderError(){
+        //Create and set up the window.
+        JFrame frame = new JFrame("User View");
+        frame.setPreferredSize(new Dimension(400,100));
+        frame.setLayout(new FlowLayout());
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-    private JTextArea textFeed(){
-        JTextArea area = new JTextArea("");
-        area.setPreferredSize(new Dimension(400,200));
-        area.setMinimumSize(new Dimension(400,200));
+        JLabel errorMssg1 = new JLabel("Error: Either no User was selected or a User Group was selected.");
+        JLabel errorMssg2 = new JLabel("Please select a User and try again.");
+        //Add content to the window.
+        frame.add(errorMssg1);
+        frame.add(errorMssg2);
 
-        ArrayList<Tweet> currentTweets = currentUser.getDisplayFeed().getFeed();
-
-        if(currentTweets != null){
-            for(Tweet tweet : currentTweets){
-                area.append(String.format("%s: -%s\n", tweet.getAuthor(), tweet.getContent()));
-            }
-        }
-        return area;
-    }
-
-    @Override
-    public void update(Observable o, Object tweet) {
-        this.removeAll();
-        this.revalidate();
-        this.repaint();
-        this.feed = textFeed(); //update feed, which is updated in User when somebody they follow tweets
-        render();
+        //Display the window.
+        frame.pack();
+        frame.setVisible(true);
     }
 }
-
