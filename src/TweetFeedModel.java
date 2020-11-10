@@ -34,20 +34,24 @@ public class TweetFeedModel extends JPanel implements Observer {
 
     private void render(){
         setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Tweet Feed"));
-        setLayout(new GridLayout(1,1));
+        setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
         setMinimumSize(new Dimension(100, 300));
+        //SCROLL PANE
+        JScrollPane tweetView = new JScrollPane(feed);
+        tweetView.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        //tweetView.setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
+        //tweetView.add(feed);
 
-        add(feed);
+        //add(feed);
+        add(tweetView);
     }
 
 
     private JTextArea textFeed(){
-        JTextArea area = new JTextArea("");
+        JTextArea area = new JTextArea(10,35);
+        area.setEditable(false);
         area.setPreferredSize(new Dimension(400,200));
-        area.setMinimumSize(new Dimension(400,200));
-
         ArrayList<Tweet> currentTweets = currentUser.getDisplayFeed().getFeed();
-
         if(currentTweets != null){
             for(Tweet tweet : currentTweets){
                 area.append(String.format("%s: -%s\n", tweet.getAuthor(), tweet.getContent()));
