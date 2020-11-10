@@ -31,14 +31,13 @@ public class FollowListViewModel extends JPanel implements TreeModel, Observer {
 
     public void render(){
         setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Following"));
-        setMinimumSize(new Dimension(600, 300));
-
+        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+        setPreferredSize(new Dimension(700, 200));
         //SCROLL PANE
         JPanel treePane = new JPanel();
         JScrollPane treeView = new JScrollPane(userList);
-        treePane.setLayout(new BoxLayout(treePane, BoxLayout.PAGE_AXIS));
+        treePane.setLayout(new BoxLayout(treePane, BoxLayout.LINE_AXIS));
         treePane.add(treeView);
-
         add(treePane);
     }
 
