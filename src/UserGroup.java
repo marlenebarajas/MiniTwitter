@@ -1,119 +1,82 @@
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Observable;
 
 /**
  *  UserGroup is observable by SelectUserModel and UserListModel.
- *  SelectUserModel - used to update the client's master user list
- *  UserListModel - used to update a unique user's UserGroup of users they follow
+ *  SelectUserModel - used to update the client's root user list
  *  */
 
-public class UserGroup extends Observable implements Entity {
+public class UserGroup extends Observable implements Account {
     private int id;
-    private int userTotal, groupTotal;
+    private int groupId;
     private String name;
-    private List<Entity> users; //users in this group
+    private ArrayList<Account> accounts; //all accounts in this group
 
     public UserGroup(){
-        this.users = new ArrayList<>();
-        this.groupTotal = 0;
-        //no id, used for "hidden" usergroups that hold a user's followers/following
+        this.accounts = new ArrayList<>();
     }
 
     public UserGroup(int id){
-        this.users = new ArrayList<>();
+        this.accounts = new ArrayList<>();
         this.id = id;
-        this.groupTotal = 0;
     }
 
-    public UserGroup(int id, String name){
-        this.users = new ArrayList<>();
-        this.id = id;
-        this.groupTotal = 0;
-        this.name = name;
-    }
-
-    public void addUser(Entity user){
-        this.users.add(user);
-        if(user instanceof User) this.userTotal++;
-        else this.groupTotal++;
+    public void addAccount(Account acc){
+        this.accounts.add(acc);
+        acc.setGroupId(this.getId());
         setChanged();
-        notifyObservers(); //this will call update() for SelectUserModel and ListViewModel, to include new user
+        notifyObservers();
     }
 
-    public void removeUser(Entity user){
-        this.users.remove(user);
-        if(user instanceof User) this.userTotal--;
-        else this.groupTotal--;
-        setChanged();
-        notifyObservers(); //this will call update() for SelectUserModel and ListViewModel, to not include old user
+    public void removeAccount(Account acc){
+        this.accounts.remove(acc);
     }
 
-    public List<Entity> getGroup(){
-        return users;
-    }
-
-    public int getUserTotal(){
-        return userTotal;
-    }
-
-    public int getGroupTotal(){
-        return groupTotal;
-    }
-
-    public User findUser(int id){
-        for(Entity entity : getGroup()){
-            if(entity instanceof UserGroup){
-                User found = ((UserGroup) entity).findUser(id);
-                if(found!=null) return found;
-            }
-            else if(entity.getId()==id && entity instanceof User){
-                return (User) entity;
-            }
-        }
-        return null; //if other return statement isn't found, no user to be found
-    }
-
-    public UserGroup getInnerGroup(int id){
-        for(Entity entity : getGroup()){
-            if(entity instanceof UserGroup){
-               if(entity.getId() == id) return (UserGroup) entity;
-               else{
-                   UserGroup found = ((UserGroup) entity).getInnerGroup(id);
-                   if(found!=null) return found;
-               }
-            }
-        }
-        return null; //if other return statement isn't found, no user to be found
-    }
-
-    public UserGroup findGroup(User user){
-        for(Entity entity : getGroup()){ //searching through current group
-            if(entity instanceof User){
-                if(entity.getId()==user.getId()){ //if user exists in this group
-                    return this;
-                }
-            } else{ //search inner group
-                ((UserGroup) entity).findGroup(user);
-            }
-        }
-        return null; //if other return statement isn't found, no group to be found
-    }
-
-    //to manually call an update to observers
+    //manually call an update to this group, used for AdminControlPanel to update whenever any group changes
     public void update(){
         setChanged();
         notifyObservers();
     }
 
+    public ArrayList<Account> getGroup(){
+        return accounts;
+    }
+
     @Override
-    public void setId(int id){
-        this.id = id;
+    public Account findAccount(int id){
+        Account search = null;
+        if(id==this.id) search = this;
+        else{
+            for(Account acc: accounts){
+                if(acc.findAccount(id)!=null) search = acc.findAccount(id);
+            }
+        }
+        return search;
+    }
+
+    @Override
+    public boolean isUser(){
+        return false;
+    }
+
+    @Override
+    public boolean isGroup(){
+        return true;
     }
 
     @Override
     public int getId() {
         return id;
+    }
+
+    @Override
+    public int getGroupId() {
+        return groupId;
+    }
+
+    @Override
+    public void setGroupId(int id) {
+        this.groupId = id;
     }
 
     @Override
@@ -135,4 +98,8 @@ public class UserGroup extends Observable implements Entity {
         }
     }
 
+    @Override
+    public double accept(Visitor v){
+        return v.visitGroup(this);
+    }
 }

@@ -5,7 +5,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class JoinGroupModel extends JPanel {
-    private static JoinGroupModel single_instance = null;
     private JTextField idInput;
     private JButton joinGroup;
     private User currentUser;
@@ -17,17 +16,6 @@ public class JoinGroupModel extends JPanel {
         this.joinGroup = buttonJoin();
         this.idInput = fieldJoin();
         render();
-    }
-
-    public static JoinGroupModel getInstance(){
-        if (single_instance == null) {
-            synchronized (JoinGroupModel.class) {
-                if (single_instance == null) {
-                    single_instance = new JoinGroupModel();
-                }
-            }
-        }
-        return single_instance;
     }
 
     private void render() {
@@ -44,7 +32,11 @@ public class JoinGroupModel extends JPanel {
         follow.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                join(idInput.getText());
+                try{
+                    join(idInput.getText());
+                }catch(NullPointerException n){
+                    errorJoining(false);
+                }
             }
         });
         return follow;
@@ -55,37 +47,37 @@ public class JoinGroupModel extends JPanel {
         return follow;
     }
 
-    //input = groupId
     private void join(String input){
         int groupid = 0;
         if(input!=null){
             try {
                 groupid = Integer.parseInt(input);
-            } catch(NumberFormatException e){
+            } catch(NumberFormatException | NullPointerException e){
                 errorJoining(false);
                 return;
             }
-            UserGroup newGroup = root.getInnerGroup(groupid);
-            if(newGroup!=null){ //case: group exists and was found
-                if(currentUser.inGroup()){ //case: currentUser is in a different group
-                    if(leaveGroup()) {//if currentuser would like to leave current group
-                        UserGroup oldGroup = root.findGroup(currentUser); //find oldGroup, group currentUser is in
-                        oldGroup.removeUser(currentUser);
-                        newGroup.addUser(currentUser);
-                    } else{ //otherwise, currentuser can't join new group
-                        //show message that user did not leave current group, hence did not join new group
-                        errorJoining(true);
-                    }
-                } else { //case: user not in group, can easily join this new group
-                    currentUser.setInGroup(true);
-                    root.removeUser(currentUser);
-                    newGroup.addUser(currentUser);
+            Account newGroup = root.findAccount(groupid);
+            if(newGroup.isGroup()) { //case: group exists and was found
+                //oldGroup is showing up as null when currentUser is in a group for some reason
+                int currentGroup = currentUser.getGroupId();
+                if(currentGroup==0){ //if currentUser is in root, they can join new group easily
+                    root.removeAccount(currentUser);
+                    ((UserGroup) newGroup).addAccount(currentUser);
+                    root.update(); // to update user tree in AdminControlPanel
                 }
-            } else{ //case: group does not exist or was not found
+                else if(leaveGroup()){ //currentUser is in another group, need to know if they want to leave oldGroup
+                    Account oldGroup = root.findAccount(currentGroup); //find oldGroup currentUser is in
+                    ((UserGroup)oldGroup).removeAccount(currentUser);
+                    ((UserGroup) newGroup).addAccount(currentUser);
+                    root.update(); // to update user tree in AdminControlPanel
+                }
+                else{ //case: user did not want to leave oldGroup, despite asking to join newGroup
+                    errorJoining(true);
+                }
+            } else{
                 errorJoining(false);
             }
         }
-        root.update();
     }
 
     private boolean leaveGroup(){
@@ -122,4 +114,5 @@ public class JoinGroupModel extends JPanel {
         error.pack();
         error.setVisible(true);
     }
+
 }

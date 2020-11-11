@@ -2,15 +2,10 @@ import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.List;
 
 /**
  * ShowTotalsModel is a component of AdminControlPanel.
- * Holds four buttons, each with a choice to get information about current session:
- *  1) user total - amount of Users in session
- *  2) group total - amount of UserGroups in session
- *  3) message total - amount of tweets(?) in session
- *  4) percentage of positive words - ((positive words) / (words from tweets of everyone in session)) * 100
+ * Holds four buttons, each with a choice to get information about current session.
  */
 public class ShowTotalsModel extends JPanel{
     private static ShowTotalsModel single_instance = null;
@@ -18,7 +13,7 @@ public class ShowTotalsModel extends JPanel{
     //components of this panel
     protected JButton showUserTotal, showGroupTotal, showMessagesTotal, showPositivePercentage;
 
-    private ShowTotalsModel(){
+    public ShowTotalsModel(){
         this.root = AdminControlPanel.root;
         this.showUserTotal = buttonUserTotal();
         this.showGroupTotal = buttonGroupTotal();
@@ -60,14 +55,12 @@ public class ShowTotalsModel extends JPanel{
 
     private JButton buttonUserTotal(){
         JButton userTotal = new JButton("Show User Total");
-        userTotal.setMnemonic(KeyEvent.VK_U); //ctrl-U to show user totals
         userTotal.setActionCommand("userTotal");
         userTotal.setToolTipText("Click this to show total # of users.");
         userTotal.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int userTotal = root.getUserTotal(); //grabs total amount of Users in session
-                String message = String.format("There are %o users in this session.", userTotal);
+                String message = String.format("There are %s users in this session.", visitRoot(new UserTotalVisitor()));
                 showMessage(message);
             }
         });
@@ -76,14 +69,12 @@ public class ShowTotalsModel extends JPanel{
 
     private JButton buttonGroupTotal(){
         JButton groupTotal = new JButton("Show User Group Total");
-        groupTotal.setMnemonic(KeyEvent.VK_G); //ctrl-g to show user group totals (THIS DOESNT WORK?)
         groupTotal.setActionCommand("groupTotal");
         groupTotal.setToolTipText("Click this to show total # of user groups.");
         groupTotal.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int groupTotal = root.getGroupTotal(); //grabs total amount of UserGroups in session
-                String message = String.format("There are %o groups in this session.", groupTotal);
+                String message = String.format("There are %s groups in this session.", visitRoot(new GroupTotalVisitor()));
                 showMessage(message);
             }
         });
@@ -92,14 +83,12 @@ public class ShowTotalsModel extends JPanel{
 
     private JButton buttonMessageTotal(){
         JButton messageTotal = new JButton("Show Messages Total");
-        messageTotal.setMnemonic(KeyEvent.VK_M); //ctrl-m to show message totals
         messageTotal.setActionCommand("messagesTotal");
         messageTotal.setToolTipText("Click this to show total # of messages.");
         messageTotal.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int mssgTotal = getMessageTotal(root); //grabs total amount of UserGroups in session
-                String message = String.format("There are %o messages/tweets in this session.", mssgTotal);
+                String message = String.format("There are %s messages/tweets in this session.", visitRoot(new MessageTotalVisitor()));
                 showMessage(message);
             }
         });
@@ -108,13 +97,16 @@ public class ShowTotalsModel extends JPanel{
 
     private JButton buttonPosPercent(){
         JButton posPercent = new JButton("Show Positive Percentage");
-        posPercent.setMnemonic(KeyEvent.VK_P); //ctrl-p to show positive percentage
         posPercent.setActionCommand("posPercentage");
         posPercent.setToolTipText("Click this to show percentage of positive words.");
         posPercent.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                double posMssg = visitRoot(new PositiveMessageVisitor());
+                double totalMssg = visitRoot(new MessageTotalVisitor());
+                double total = (posMssg/totalMssg) * 100;
+                String message = String.format("%s%s of messages/tweets in this session are positive.", total, "%");
+                showMessage(message);
             }
         });
         return posPercent;
@@ -126,20 +118,11 @@ public class ShowTotalsModel extends JPanel{
         JOptionPane.showMessageDialog(frame,mssg);
     }
 
-    //starting at root, go through sum all user's tweets
-    private int getMessageTotal(UserGroup group){
-        int n = 0;
-        List<Entity> users = group.getGroup();
-        if(users!=null){
-            for(Entity user : users){
-                if(user instanceof UserGroup){
-                    n += getMessageTotal((UserGroup) user);
-                }
-                else{
-                    n += ((User) user).getTweets().getTweetTotal();
-                }
-            }
+    public double visitRoot(Visitor v){
+        double total = 0.0;
+        for(Account account : root.getGroup()){
+            total += account.accept(v);
         }
-        return n;
+        return total;
     }
 }

@@ -6,9 +6,11 @@ import java.awt.*;
  */
 public class AdminControlPanel{
     private static AdminControlPanel single_instance = null;
-    static UserGroup root = new UserGroup(0, "Root"); //master user group- holds all users in session
+    static UserGroup root; //master user group- holds all users in session
 
     private AdminControlPanel() {
+        root = new UserGroup(0);
+        root.setName("Root");
         render();
     }
 

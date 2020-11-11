@@ -1,71 +1,95 @@
+import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
 
 /**
- * UserTweets is observed by other user's TweetFeed, if other user is following this user.
- * User observes Feeds, UserView observes Users
+ * User observes other Users, UserView observes a User
  */
-public class User extends Observable implements Observer, Entity {
-    // static variable single_instance of type Singleton
+public class User extends Observable implements Observer, Account {
     private int id; //user's unique ID
+    private int groupId; //id of group user is in
     private String name;
-    private boolean inGroup;
-    private UserGroup followers; //followers of this user
-    private UserGroup following; //users this user follows
-    private Feed feed; //this user's personal feed
-    private Feed displayFeed; //feed updated with this user + following user's tweets
+
+    private ArrayList<String> personalFeed; //feed of this user's tweets
+    private ArrayList<String> displayFeed; //feed updated with this user + following user's tweets
+    private ArrayList<Account> following;//who this user follows
 
     public User(int id){
         this.id = id;
-        this.inGroup = false;
-        this.followers = new UserGroup();
-        this.following = new UserGroup();
-        this.feed = new Feed();
-        this.feed.addObserver(this); //a user observes their own tweets
-        this.displayFeed = new Feed();
-    }
-
-    public void setInGroup(boolean tf){
-        this.inGroup = tf;
-    }
-
-    public boolean inGroup(){
-        return inGroup;
-    }
-
-    public UserGroup getFollowers(){
-        return followers;
-    }
-
-    public UserGroup getFollowing(){
-        return following;
+        this.personalFeed = new ArrayList<>();
+        this.displayFeed = new ArrayList<>();
+        this.following = new ArrayList<>();
+        addObserver(this); //user observes their own feed
     }
 
     public void followUser(User user){
-        this.following.addUser(user); //add to this user's following list
-        (user.getTweets()).addObserver(this); //this user's feed will get updates from who they follow
+        this.following.add(user); //add to this user's following list
+        user.addObserver(this); //this user's feed will get updates from who they follow
+        setChanged();
+        notifyObservers();
     }
 
-    public Feed getTweets(){
-        return feed;
+    public boolean isFollowing(int id){
+        for(Account following: following){
+            if(following.getId() == id) return true;
+        } return false;
     }
 
-    public void postTweet(Tweet tweet){
-        feed.addToFeed(tweet);
+    public ArrayList<Account> getFollowing(){
+        return following;
     }
 
-    public Feed getDisplayFeed(){
+    public void postTweet(String tweet){
+        String formattedTweet = String.format("%s: -%s\n", getName(), tweet);
+        this.personalFeed.add(formattedTweet);
+        //update users who follow this feed
+        setChanged();
+        notifyObservers(formattedTweet);
+    }
+
+    public void addToDisplay(String tweet){
+        this.displayFeed.add(tweet);
+        setChanged();
+        notifyObservers();
+    }
+
+    public ArrayList<String> getDisplayFeed(){
         return displayFeed;
     }
 
+    public ArrayList<String> getTweets(){
+        return personalFeed;
+    }
+
     @Override
-    public void setId(int id){
-        this.id = id;
+    public Account findAccount(int id){
+        if(id==this.id) return this;
+        else return null; //if this is not the account
+    }
+
+    @Override
+    public boolean isUser(){
+        return true;
+    }
+
+    @Override
+    public boolean isGroup(){
+        return false;
     }
 
     @Override
     public int getId() {
         return id;
+    }
+
+    @Override
+    public int getGroupId() {
+        return groupId;
+    }
+
+    @Override
+    public void setGroupId(int id) {
+        this.groupId = id;
     }
 
     @Override
@@ -89,8 +113,13 @@ public class User extends Observable implements Observer, Entity {
 
     @Override
     public void update(Observable o, Object arg) {
-        this.displayFeed.addToFeed((Tweet) arg);
-        setChanged();
-        notifyObservers();
+        if(arg!=null){
+            addToDisplay((String) arg); //user's own displayFeed + user's followers' displayFeeds
+        }
+    }
+
+    @Override
+    public double accept(Visitor v){
+        return v.visitUser(this);
     }
 }

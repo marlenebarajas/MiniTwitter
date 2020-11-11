@@ -97,29 +97,29 @@ public class AddUserModel extends JPanel{
     private void registerUser(String name){
         Random rand = new Random();
         int id = 0;
-        User user = null;
+        Account user = null;
         do{
             id = rand.nextInt(9000); //random id chosen
-            user = root.findUser(id); //user = null if id is NOT take
+            user = root.findAccount(id); //user = null if id is NOT take
         } while(user!=null); // if user!=null, we need to generate new id
 
         user = new User(id); //id is not taken bc of previous check
         user.setName(name);
-        root.addUser(user);
+        root.addAccount(user);
     }
 
     private void registerGroup(String name){
         Random rand = new Random();
         int id = 0;
-        UserGroup group = null;
+        Account group = null;
         do{
             id = rand.nextInt(9000); //random id chosen
-            group = root.getInnerGroup(id); //group = null if id is NOT take
+            group = root.findAccount(id); //group = null if id is NOT take
         } while(group!=null); // if group!=null, we need to generate new id
 
         group = new UserGroup(id); //id is not taken bc of previous check
         group.setName(name);
-        root.addUser(group);
+        root.addAccount(group);
     }
 
 }

@@ -5,34 +5,21 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class PostTweetModel extends JPanel {
-    private static PostTweetModel single_instance = null;
     private JTextField tweet;
     private JButton post;
     private User currentUser;
 
-    private PostTweetModel(){
+    public PostTweetModel(){
         this.tweet = fieldTweet();
         this.post = buttonPostTweet();
         this.currentUser = UserView.currentUser;
         render();
     }
 
-    public static PostTweetModel getInstance(){
-        if (single_instance == null) {
-            synchronized (PostTweetModel.class) {
-                if (single_instance == null) {
-                    single_instance = new PostTweetModel();
-                }
-            }
-        }
-        return single_instance;
-    }
-
     private void render(){
         setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Post Tweet"));
         setLayout(new GridLayout(2, 1));
         setPreferredSize(new Dimension(300,200));
-
         add(tweet);
         add(post);
     }
@@ -51,8 +38,10 @@ public class PostTweetModel extends JPanel {
         post.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Tweet newTweet = new Tweet(currentUser.getName(), tweet.getText());
-                currentUser.postTweet(newTweet);
+                if(tweet.getText()!=null){
+                    String newTweet = tweet.getText();
+                    currentUser.postTweet(newTweet);
+                }
             }
         });
         return post;
