@@ -10,26 +10,14 @@ import java.util.Observable;
  */
 
 public class TweetFeedModel extends JPanel implements Observer {
-    private static TweetFeedModel single_instance = null;
     private JTextArea feed;
     private User currentUser;
 
-    private TweetFeedModel(){
+    public TweetFeedModel(){
         this.currentUser = UserView.currentUser;
         currentUser.addObserver(this); //so that when user's feed is updated, this is too
         this.feed = textFeed();
         render();
-    }
-
-    public static TweetFeedModel getInstance(){
-        if (single_instance == null) {
-            synchronized (TweetFeedModel.class) {
-                if (single_instance == null) {
-                    single_instance = new TweetFeedModel();
-                }
-            }
-        }
-        return single_instance;
     }
 
     private void render(){
@@ -39,10 +27,6 @@ public class TweetFeedModel extends JPanel implements Observer {
         //SCROLL PANE
         JScrollPane tweetView = new JScrollPane(feed);
         tweetView.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        //tweetView.setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
-        //tweetView.add(feed);
-
-        //add(feed);
         add(tweetView);
     }
 
@@ -50,16 +34,17 @@ public class TweetFeedModel extends JPanel implements Observer {
     private JTextArea textFeed(){
         JTextArea area = new JTextArea(10,35);
         area.setEditable(false);
-        area.setPreferredSize(new Dimension(400,200));
-        ArrayList<Tweet> currentTweets = currentUser.getDisplayFeed().getFeed();
+        area.setPreferredSize(new Dimension(400,300));
+        ArrayList<String> currentTweets = currentUser.getDisplayFeed();
         if(currentTweets != null){
-            for(Tweet tweet : currentTweets){
-                area.append(String.format("%s: -%s\n", tweet.getAuthor(), tweet.getContent()));
+            for(String tweet : currentTweets){
+                area.append(tweet);
             }
         }
         return area;
     }
 
+    //called when user's displayFeed is updated
     @Override
     public void update(Observable o, Object tweet) {
         this.removeAll();
@@ -69,3 +54,4 @@ public class TweetFeedModel extends JPanel implements Observer {
         render();
     }
 }
+

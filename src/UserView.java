@@ -3,7 +3,7 @@ import java.awt.*;
 
 public class UserView {
     static User currentUser;
-    static JPanel topPanel, midTopPanel, midBtmPanel, btmPanel;
+    JPanel topPanel, midTopPanel, midBtmPanel, btmPanel;
 
     public UserView(){
         currentUser = null;
@@ -12,55 +12,26 @@ public class UserView {
 
     public UserView(User user){
         currentUser = user;
-        topPanel = topPanel();
-        midTopPanel = midTopPanel();
-        midBtmPanel = midBtmPanel();
-        btmPanel = btmPanel();
         render();
     }
 
-    private static void render() {
+    private void render() {
         //Create and set up the window.
         JFrame frame = new JFrame(String.format("User View: %s",currentUser));
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.setMinimumSize(new Dimension(800,700));
-        frame.setPreferredSize(new Dimension(800, 750));
+        frame.setMinimumSize(new Dimension(800,550));
+        frame.setPreferredSize(new Dimension(800, 550));
         frame.setLayout(new FlowLayout());
 
         //Add content to the window.
-        frame.add(topPanel);
-        frame.add(midTopPanel);
-        frame.add(midBtmPanel);
-        frame.add(btmPanel);
-
+        frame.add(new FollowListViewModel());
+        frame.add(new FollowUserModel());
+        frame.add(new JoinGroupModel());
+        frame.add(new TweetFeedModel());
+        frame.add(new PostTweetModel());
         //Display the window.
         frame.pack();
         frame.setVisible(true);
-    }
-
-    private static JPanel topPanel(){
-        JPanel panel = new JPanel();
-        panel.add(FollowListViewModel.getInstance());
-        return panel;
-    }
-
-    private static JPanel midTopPanel(){
-        JPanel panel = new JPanel();
-        panel.add(TweetFeedModel.getInstance());
-        panel.add(PostTweetModel.getInstance());
-        return panel;
-    }
-
-    private static JPanel midBtmPanel(){
-        JPanel panel = new JPanel();
-        panel.add(FollowUserModel.getInstance());
-        return panel;
-    }
-
-    private static JPanel btmPanel(){
-        JPanel panel = new JPanel();
-        panel.add(JoinGroupModel.getInstance());
-        return panel;
     }
 
     private static void renderError(){

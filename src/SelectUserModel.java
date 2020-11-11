@@ -16,13 +16,13 @@ import java.util.Observer;
  * Holds a TreeModel that displays all users in current session.
  * Observes UserGroup root so that SelectUserModel updates every time an User/UserGroup to the session.
  * **/
-public class SelectUserModel extends JPanel implements TreeModel, Observer {
+public class SelectUserModel extends JPanel implements Observer {
     private static SelectUserModel single_instance = null;
     private UserGroup root; //all users in this session
     //component of this panel
     private JTree userList;
     private JButton userViewButton;
-    private User selectedUser = null;
+    private Account selectedUser = null;
 
     private SelectUserModel(){
         this.root = AdminControlPanel.root;
@@ -53,7 +53,6 @@ public class SelectUserModel extends JPanel implements TreeModel, Observer {
         JScrollPane treeView = new JScrollPane(userList);
         treePane.setLayout(new BoxLayout(treePane, BoxLayout.PAGE_AXIS));
         treePane.add(treeView);
-
         //BUTTON PANEL
         JPanel buttonPane = new JPanel();
         buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
@@ -71,7 +70,7 @@ public class SelectUserModel extends JPanel implements TreeModel, Observer {
         userView.addActionListener(new ActionListener() { //add action listener
             @Override
             public void actionPerformed(ActionEvent e) {
-                openUserView(selectedUser);
+                if(selectedUser.isUser()) new UserView((User) selectedUser);
             }
         });
         return userView;
@@ -89,48 +88,32 @@ public class SelectUserModel extends JPanel implements TreeModel, Observer {
             @Override
             public void valueChanged(TreeSelectionEvent e) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
-
-                if(node==null){//if nothing is selected
-                    return; //do nothing
-                } else{
-                    Entity nodeObject = (Entity) node.getUserObject();
-                    if(nodeObject instanceof User){
-                        selectedUser = (User) nodeObject;
-                    }else{ //case: UserGroup, which should not be able to call openUserView() that selectedUser if used for
-                        selectedUser = null;
-                    }
+                if(node!=null){//if something is selected
+                    Account nodeObject = (Account) node.getUserObject();
+                    selectedUser = nodeObject;
                 }
             }
         });
         return tree;
     }
 
-    public void createNodes(DefaultMutableTreeNode top, UserGroup root) {
+    public void createNodes(DefaultMutableTreeNode top, Account root) {
         DefaultMutableTreeNode group = null;
         DefaultMutableTreeNode name = null;
-
-        if(root.getGroup()!=null){
-            for(Entity entity : root.getGroup()){
-                if(entity instanceof UserGroup){
-                    group = new DefaultMutableTreeNode(entity);
+        if(root.isGroup()){
+            for(Account acc : ((UserGroup)root).getGroup()){
+                if(acc.isGroup()){
+                    group = new DefaultMutableTreeNode(acc);
                     top.add(group);
-                    createNodes(group, (UserGroup) entity); //recursively run through this UserGroup
+                    createNodes(group, acc); //recursively run through this UserGroup
                 } else{ //else, this user is already in current group
-                    name = new DefaultMutableTreeNode(entity);
+                    name = new DefaultMutableTreeNode(acc);
                     top.add(name);
                 }
             }
         } else{ //case: UserGroup that has no Users added to it yet
             name = new DefaultMutableTreeNode(root);
             top.add(name);
-        }
-    }
-
-    private void openUserView(User user){
-        if(user!=null){
-            new UserView(user);
-        }else{
-            new UserView();
         }
     }
 

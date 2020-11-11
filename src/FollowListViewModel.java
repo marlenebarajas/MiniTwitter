@@ -1,68 +1,44 @@
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
-import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
 
-//access to UserView.var
-public class FollowListViewModel extends JPanel implements TreeModel, Observer {
-    private static FollowListViewModel single_instance = null;
-    private JTree userList;
-    private UserGroup following;
+public class FollowListViewModel extends JPanel implements Observer {
+    private User currentUser;
+    private JTextArea followList;
+    private ArrayList<Account> following;
 
-    private FollowListViewModel(){
-        this.following = UserView.currentUser.getFollowing();
-        this.userList = createTree();
-        following.addObserver(this); //updates view when user follows somebody new
+    public FollowListViewModel(){
+        this.currentUser = UserView.currentUser;
+        currentUser.addObserver(this);
         render();
     }
 
-    public static FollowListViewModel getInstance(){
-        if (single_instance == null) {
-            synchronized (FollowListViewModel.class) {
-                if (single_instance == null) {
-                    single_instance = new FollowListViewModel();
-                }
-            }
-        }
-        return single_instance;
-    }
-
     public void render(){
+        following = currentUser.getFollowing();
+        followList = textFollowList();
         setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Following"));
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
-        setPreferredSize(new Dimension(700, 200));
-        //SCROLL PANE
-        JPanel treePane = new JPanel();
-        JScrollPane treeView = new JScrollPane(userList);
-        treePane.setLayout(new BoxLayout(treePane, BoxLayout.LINE_AXIS));
-        treePane.add(treeView);
-        add(treePane);
+        setPreferredSize(new Dimension(600, 200));
+        add(followList);
     }
 
-    public JTree createTree(){
-        //Create the nodes.
-        DefaultMutableTreeNode top = new DefaultMutableTreeNode(following);
-        createNodes(top, following);
-        //Create a tree that allows one selection at a time.
-        JTree tree = new JTree(top);
-        return tree;
-    }
-
-    public void createNodes(DefaultMutableTreeNode top, UserGroup root) {
-        DefaultMutableTreeNode name = null;
-        for(Entity entity : root.getGroup()){
-            if(entity instanceof User){ //everything in group should be a User
-                name = new DefaultMutableTreeNode(entity);
-                top.add(name);
+    private JTextArea textFollowList(){
+        JTextArea area = new JTextArea(10,35);
+        area.setEditable(false);
+        area.setPreferredSize(new Dimension(350,100));
+        if(following != null){
+            for(Account user : following){
+                area.append(String.format("- %s\n", user.getName()));
             }
         }
+        return area;
     }
 
     @Override
     public void update(Observable o, Object arg) {
-        this.userList = createTree();
         this.removeAll();
         this.revalidate();
         this.repaint();
