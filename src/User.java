@@ -9,7 +9,8 @@ public class User extends Observable implements Observer, Account {
     private int id; //user's unique ID
     private int groupId; //id of group user is in
     private String name;
-
+    private long creationTime; //time that the user was created
+    private long lastUpdateTime; //time this user last updated
     private ArrayList<String> personalFeed; //feed of this user's tweets
     private ArrayList<String> displayFeed; //feed updated with this user + following user's tweets
     private ArrayList<Account> following;//who this user follows
@@ -103,11 +104,29 @@ public class User extends Observable implements Observer, Account {
     }
 
     @Override
+    public void setCreationTime(long time){
+        this.creationTime = time;
+    }
+
+    @Override
+    public long getCreationTime(){
+        return creationTime;
+    }
+
+    public void setLastUpdateTime(long time){
+        this.lastUpdateTime = time;
+    }
+
+    public long getLastUpdateTime(){
+        return lastUpdateTime;
+    }
+
+    @Override
     public String toString() {
         if(getId()==0){
             return "Root";
         } else{
-            return name + String.format("(user id: %d)", getId());
+            return String.format("User: %s (id: %d)", name, getId());
         }
     }
 

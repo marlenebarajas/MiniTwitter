@@ -1,5 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class UserView {
     static User currentUser;
@@ -16,8 +18,12 @@ public class UserView {
     }
 
     private void render() {
+        //Formatting UserView's header
+        SimpleDateFormat title = new SimpleDateFormat("dd-MM-yyyy 'at' HH:mm:ss z");
+        Date date = new Date(currentUser.getCreationTime());
+
         //Create and set up the window.
-        JFrame frame = new JFrame(String.format("User View: %s",currentUser));
+        JFrame frame = new JFrame(String.format("%s Creation Time: %s",currentUser, title.format(date)));
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setMinimumSize(new Dimension(800,550));
         frame.setPreferredSize(new Dimension(800, 550));

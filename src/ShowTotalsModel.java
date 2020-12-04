@@ -11,7 +11,7 @@ public class ShowTotalsModel extends JPanel{
     private static ShowTotalsModel single_instance = null;
     private UserGroup root;  //all users in this session
     //components of this panel
-    protected JButton showUserTotal, showGroupTotal, showMessagesTotal, showPositivePercentage;
+    protected JButton showUserTotal, showGroupTotal, showMessagesTotal, showPositivePercentage, showLastUpdated;
 
     public ShowTotalsModel(){
         this.root = AdminControlPanel.root;
@@ -19,6 +19,7 @@ public class ShowTotalsModel extends JPanel{
         this.showGroupTotal = buttonGroupTotal();
         this.showMessagesTotal = buttonMessageTotal();
         this.showPositivePercentage = buttonPosPercent();
+        this.showLastUpdated = buttonLastUpdated();
         render();
     }
 
@@ -41,15 +42,20 @@ public class ShowTotalsModel extends JPanel{
         JPanel topButtons = new JPanel();
         topButtons.setLayout(new BoxLayout(topButtons, BoxLayout.LINE_AXIS));
 
+        JPanel midButtons = new JPanel();
+        midButtons.setLayout(new BoxLayout(midButtons, BoxLayout.LINE_AXIS));
+
         JPanel btmButtons = new JPanel();
         btmButtons.setLayout(new BoxLayout(btmButtons, BoxLayout.LINE_AXIS));
 
         //Add components
         topButtons.add(showUserTotal);
         topButtons.add(showGroupTotal);
-        btmButtons.add(showMessagesTotal);
-        btmButtons.add(showPositivePercentage);
+        midButtons.add(showMessagesTotal);
+        midButtons.add(showPositivePercentage);
+        btmButtons.add(showLastUpdated);
         add(topButtons);
+        add(midButtons);
         add(btmButtons);
     }
 
@@ -112,6 +118,23 @@ public class ShowTotalsModel extends JPanel{
         return posPercent;
     }
 
+    private JButton buttonLastUpdated(){
+        JButton lastUpdated = new JButton("Show Last Updated User");
+        lastUpdated.setActionCommand("userTotal");
+        lastUpdated.setToolTipText("Click this to show which user last updated their feed.");
+        lastUpdated.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String message;
+                User lastResult = getLastUpdated();
+                if(lastResult==null) message = String.format("There are no users.");
+                else message = String.format("%s is the last user to update their feed.", lastResult);
+                showMessage(message);
+            }
+        });
+        return lastUpdated;
+    }
+
     //pops up JOptionPane with appropriate information displayed, called from button presses
     private void showMessage(String mssg){
         JFrame frame = new JFrame();
@@ -125,4 +148,18 @@ public class ShowTotalsModel extends JPanel{
         }
         return total;
     }
+    
+    //can't use visitor pattern because it doesn't return double
+    private User getLastUpdated(){
+        long currentRecent = 0;
+        User result = null;
+        for(Account account : root.getGroup()){
+            if(account instanceof User && ((User) account).getLastUpdateTime()>currentRecent){
+                currentRecent = ((User) account).getLastUpdateTime();
+                result = (User) account;
+            }
+        }
+        return (User) result;
+    }
+    
 }

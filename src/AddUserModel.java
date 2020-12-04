@@ -106,6 +106,8 @@ public class AddUserModel extends JPanel{
         user = new User(id); //id is not taken bc of previous check
         user.setName(name);
         root.addAccount(user);
+        user.setCreationTime(System.currentTimeMillis()); //set the creation time of user
+        ((User) user).setLastUpdateTime(System.currentTimeMillis());
     }
 
     private void registerGroup(String name){
@@ -120,6 +122,7 @@ public class AddUserModel extends JPanel{
         group = new UserGroup(id); //id is not taken bc of previous check
         group.setName(name);
         root.addAccount(group);
+        group.setCreationTime(System.currentTimeMillis()); //set the creation time of group
     }
 
 }

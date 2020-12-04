@@ -2,7 +2,7 @@ import java.util.ArrayList;
 
 public class PositiveMessageVisitor implements Visitor {
     private String[] posWords = { "good", "happy", "nice", "great", "amazing",  //words that will flag a message as positive
-            "glad", "marvelous", "love", "positive" };
+            "glad", "marvelous", "love", "positive", "wonderful" };
 
     @Override
     public double visitUser(User user) {

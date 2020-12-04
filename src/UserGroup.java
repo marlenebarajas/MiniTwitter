@@ -10,6 +10,7 @@ public class UserGroup extends Observable implements Account {
     private int id;
     private int groupId;
     private String name;
+    private long creationTime; //time that the group was created
     private ArrayList<Account> accounts; //all accounts in this group
 
     public UserGroup(){
@@ -90,11 +91,21 @@ public class UserGroup extends Observable implements Account {
     }
 
     @Override
+    public void setCreationTime(long time){
+        this.creationTime = time;
+    }
+
+    @Override
+    public long getCreationTime(){
+        return creationTime;
+    }
+
+    @Override
     public String toString() {
         if(getId()==0){
             return "Root";
         } else{
-            return String.format("%s (group id: %d)", name, getId());
+            return String.format("Group: %s (id: %d)", name, getId());
         }
     }
 
